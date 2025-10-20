@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENT/GEDS CBT Practice Test</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .cbt-container {
+            min-height: 100vh;
+        }
+        /* Custom radio button styling */
+        .custom-radio {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #3b82f6; /* Blue 500 */
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+        .custom-radio:checked {
+            background-color: #3b82f6; /* Blue 500 */
+            border-color: #3b82f6;
+        }
+        .custom-radio:checked::before {
+            content: '';
+            width: 0.5rem;
+            height: 0.5rem;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="app" class="cbt-container flex items-center justify-center p-4">
+
+        <!-- Main Card -->
+        <div id="cbt-card" class="w-full max-w-2xl bg-white shadow-xl rounded-xl p-8 transition-all duration-300">
+            <!-- Content will be injected here -->
+        </div>
+
+        <!-- Hidden Modal for Confirmation -->
+        <div id="modal-container" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-lg p-6 shadow-2xl max-w-sm w-full">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Submission</h3>
+                <p class="text-gray-600 mb-6">Are you sure you want to finish the test? You cannot change your answers after submitting.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancel</button>
+                    <button onclick="submitTest()" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150">Finish Test</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. QUIZ DATA ---
+        const QUESTIONS = [
+            {
+                q: "Entrepreneurship is best described as the process of:",
+                options: ["Selling products online", "Creating something of value with risk and rewards", "Following market trends", "Imitating established businesses"],
+                answer: "Creating something of value with risk and rewards"
+            },
+            {
+                q: "The term 'entrepreneur' originated from which language?",
+                options: ["German", "English", "French", "Latin"],
+                answer: "French"
+            },
+            {
+                q: "The 'PESTEL' framework in the entrepreneurial environment stands for:",
+                options: ["Political, Economic, Socio-cultural, Technological, Ecological, Legal", "Profit, Ethics, Strategy, Technology, Environment, Leadership", "Public, Economy, Social, Tax, Ethics, Law", "Policy, Energy, Society, Transport, Economy, Law"],
+                answer: "Political, Economic, Socio-cultural, Technological, Ecological, Legal"
+            },
+            {
+                q: "Which of the following is NOT considered an external factor in the entrepreneurial environment?",
+                options: ["Political environment", "Economic environment", "Company shareholders", "Technological environment"],
+                answer: "Company shareholders"
+            },
+            {
+                q: "In entrepreneurship, the term 'SWOT' refers to:",
+                options: ["Strategy, Work, Operations, and Tactics", "Strengths, Weaknesses, Opportunities, and Threats", "Sustainability, Wealth, Opportunity, and Trade", "Structure, Workforce, Optimization, and Technology"],
+                answer: "Strengths, Weaknesses, Opportunities, and Threats"
+            },
+            {
+                q: "Intrapreneurship refers to:",
+                options: ["Launching a start-up outside an organization", "Innovating within an organization to benefit it", "Outsourcing business processes", "Investing in public sector projects"],
+                answer: "Innovating within an organization to benefit it"
+            },
+            {
+                q: "Who coined the term 'Creative Destruction'?",
+                options: ["Michael E. Gerber", "Joseph Schumpeter", "Peter Drucker", "Richard Cantillon"],
+                answer: "Joseph Schumpeter"
+            },
+            {
+                q: "Which theory focuses on the individual’s skills, knowledge, and experience as the primary driver of entrepreneurship?",
+                options: ["Opportunity Recognition Theory", "Human Capital Theory", "Resource-Based Theory", "Social Cognitive Theory"],
+                answer: "Human Capital Theory"
+            },
+            {
+                q: "What is the primary goal of innovation?",
+                options: ["To reduce costs", "To create and implement new ideas, products, services, or processes that provide value", "To maintain existing solutions", "To eliminate competition"],
+                answer: "To create and implement new ideas, products, services, or processes that provide value"
+            },
+            {
+                q: "Which type of entrepreneurship focuses on solving social or environmental problems?",
+                options: ["Innovation Entrepreneurship", "Social Entrepreneurship", "Scalable Entrepreneurship", "Corporate Entrepreneurship"],
+                answer: "Social Entrepreneurship"
+            },
+            {
+                q: "An entrepreneur is someone who:",
+                options: ["Only manages resources given to them", "Engages in traditional business activities", "Innovates by taking risks to meet a need", "Avoids any risks in business"],
+                answer: "Innovates by taking risks to meet a need"
+            },
+            {
+                q: "Which is a typical disadvantage faced by entrepreneurs?",
+                options: ["Financial security", "Stable working hours", "Long hours and hard work", "Easy access to resources"],
+                answer: "Long hours and hard work"
+            },
+            {
+                q: "The internal environment of an enterprise includes:",
+                options: ["Customers, suppliers, and competitors", "Political factors and legal policies", "Economic trends and ecological changes", "Technological advancements"],
+                answer: "Customers, suppliers, and competitors"
+            },
+            {
+                q: "A key component of the entrepreneurial process is:",
+                options: ["Avoiding risks entirely", "Following government guidelines strictly", "Creating a business plan", "Emphasizing product imitation"],
+                answer: "Creating a business plan"
+            },
+            {
+                q: "Which of these is NOT a type of entrepreneur?",
+                options: ["Smart entrepreneur", "Lifestyle entrepreneur", "Visionary entrepreneur", "Breakthrough entrepreneur"],
+                answer: "Smart entrepreneur"
+            },
+            {
+                q: "A visionary entrepreneur is distinct because they:",
+                options: ["Operate solely in traditional markets", "Have a short-term profit focus", "Envision a better future through their business", "Rely on existing technology exclusively"],
+                answer: "Envision a better future through their business"
+            },
+            {
+                q: "What is a characteristic of Micro-Entrepreneurship?",
+                options: ["Disrupting existing markets", "Large-scale operations", "Small-scale operations with limited resources", "Creating social impact through non-profits"],
+                answer: "Small-scale operations with limited resources"
+            },
+            {
+                q: "Early definitions of entrepreneurs were developed by:",
+                options: ["management experts", "marketing experts", "personnel managers", "economists"],
+                answer: "economists"
+            },
+            {
+                q: "The concept of creative destruction states that:",
+                options: ["entrepreneurs must risk financial capital", "entrepreneurship has an uncertain financial return", "entrepreneurs are a force for change", "entrepreneurs have unique personality traits"],
+                answer: "entrepreneurs are a force for change"
+            },
+            {
+                q: "Sustainable Entrepreneurship prioritizes which of the following in addition to financial profitability?",
+                options: ["Rapid scaling", "Environmental and social sustainability", "Creating multiple businesses", "Digital products"],
+                answer: "Environmental and social sustainability"
+            }
+        ];
+
+        // --- 2. STATE MANAGEMENT ---
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(QUESTIONS.length).fill(null);
+        let quizState = 'start'; // 'start', 'quiz', 'results'
+        const appContainer = document.getElementById('cbt-card');
+        const modalContainer = document.getElementById('modal-container');
+
+        // --- 3. RENDERING FUNCTIONS ---
+
+        /**
+         * Renders the welcome screen.
+         */
+        function renderStartScreen() {
+            appContainer.innerHTML = `
+                <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">ENT/GEDS CBT Practice</h1>
+                <p class="text-center text-gray-600 mb-8">
+                    Welcome! This test contains ${QUESTIONS.length} multiple-choice questions compiled from your uploaded materials.
+                </p>
+                <div class="text-center space-y-4">
+                    <p class="text-lg font-semibold text-gray-700">Test Rules:</p>
+                    <ul class="list-disc list-inside text-left mx-auto max-w-sm text-gray-500">
+                        <li>You can navigate between questions.</li>
+                        <li>Your answers are saved automatically.</li>
+                        <li>You must submit to see your score.</li>
+                    </ul>
+                </div>
+                <button onclick="startQuiz()" class="mt-10 w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-105">
+                    Start Practice Test (${QUESTIONS.length} Questions)
+                </button>
+            `;
+        }
+
+        /**
+         * Renders the current question and navigation controls.
+         */
+        function renderQuizScreen() {
+            const q = QUESTIONS[currentQuestionIndex];
+            const qNumber = currentQuestionIndex + 1;
+            const totalQuestions = QUESTIONS.length;
+
+            const optionsHTML = q.options.map((option, index) => `
+                <label for="option-${index}" class="flex items-center p-4 mb-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition duration-150">
+                    <input type="radio" id="option-${index}" name="answer" value="${option}"
+                           class="custom-radio"
+                           ${userAnswers[currentQuestionIndex] === option ? 'checked' : ''}
+                           onchange="saveAnswer('${option}')">
+                    <span class="text-gray-700 font-medium ml-2">${String.fromCharCode(65 + index)}. ${option}</span>
+                </label>
+            `).join('');
+
+            appContainer.innerHTML = `
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-xl font-bold text-blue-600">Question ${qNumber} of ${totalQuestions}</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">${Math.round((qNumber / totalQuestions) * 100)}% Complete</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 rounded-full">
+                        <div class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: ${Math.round((qNumber / totalQuestions) * 100)}%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 p-6 rounded-lg shadow-inner mb-6">
+                    <p class="text-lg font-semibold text-gray-800">${q.q}</p>
+                </div>
+
+                <form id="quiz-form" class="space-y-4 mb-8">
+                    ${optionsHTML}
+                </form>
+
+                <div class="flex justify-between">
+                    <button onclick="prevQuestion()" ${currentQuestionIndex === 0 ? 'disabled' : ''}
+                        class="px-6 py-3 bg-gray-300 text-gray-700 font-semibold rounded-lg transition duration-150 ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-400'}">
+                        &larr; Previous
+                    </button>
+                    ${currentQuestionIndex < totalQuestions - 1 ? `
+                        <button onclick="nextQuestion()"
+                            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150">
+                            Next &rarr;
+                        </button>
+                    ` : `
+                        <button onclick="openModal()"
+                            class="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 transform hover:scale-105">
+                            Finish Test
+                        </button>
+                    `}
+                </div>
+            `;
+        }
+
+        /**
+         * Renders the final results screen with score and review.
+         */
+        function renderResultsScreen() {
+            const score = calculateScore();
+            const total = QUESTIONS.length;
+
+            let reviewHTML = QUESTIONS.map((q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                const icon = isCorrect ? '&#x2713;' : '&#x2717;'; // Checkmark or X
+                const color = isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50';
+
+                return `
+                    <div class="mb-6 p-4 border-l-4 ${color} rounded-lg shadow-sm">
+                        <p class="font-semibold text-lg text-gray-800 mb-2">${index + 1}. ${q.q}</p>
+                        <p class="text-sm font-medium ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                            <span class="mr-2">${icon}</span>
+                            Your Answer: <span class="font-bold">${userAnswer || 'No Answer'}</span>
+                        </p>
+                        ${!isCorrect ? `<p class="text-sm text-gray-600 mt-1">Correct Answer: <span class="font-bold text-green-700">${q.answer}</span></p>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            appContainer.innerHTML = `
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-extrabold text-blue-700 mb-4">Test Results</h1>
+                    <div class="p-6 inline-block bg-blue-100 rounded-xl shadow-lg">
+                        <p class="text-xl text-gray-700">Your Score:</p>
+                        <p class="text-6xl font-black ${score >= total / 2 ? 'text-green-600' : 'text-red-600'}">${score}/${total}</p>
+                        <p class="text-xl text-gray-700">${Math.round((score / total) * 100)}%</p>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">Answer Review</h2>
+                <div class="max-h-96 overflow-y-auto pr-2">
+                    ${reviewHTML}
+                </div>
+
+                <div class="text-center mt-8">
+                    <button onclick="restartQuiz()" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-105">
+                        Start New Test
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- 4. NAVIGATION & LOGIC ---
+
+        function startQuiz() {
+            quizState = 'quiz';
+            currentQuestionIndex = 0;
+            userAnswers.fill(null);
+            renderQuizScreen();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < QUESTIONS.length - 1) {
+                currentQuestionIndex++;
+                renderQuizScreen();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuizScreen();
+            }
+        }
+
+        function saveAnswer(selectedAnswer) {
+            userAnswers[currentQuestionIndex] = selectedAnswer;
+            // Re-render to update the visual state (though onchange handles the radio button state)
+            // renderQuizScreen();
+        }
+
+        function calculateScore() {
+            let score = 0;
+            QUESTIONS.forEach((q, index) => {
+                if (userAnswers[index] === q.answer) {
+                    score++;
+                }
+            });
+            return score;
+        }
+
+        function openModal() {
+            modalContainer.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalContainer.classList.add('hidden');
+        }
+
+        function submitTest() {
+            closeModal();
+            quizState = 'results';
+            renderResultsScreen();
+        }
+
+        function restartQuiz() {
+            renderStartScreen();
+            quizState = 'start';
+            currentQuestionIndex = 0;
+            userAnswers.fill(null);
+        }
+
+        // Initial render
+        window.onload = renderStartScreen;
+
+    </script>
+</body>
+</html>
